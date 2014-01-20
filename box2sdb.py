@@ -13,32 +13,31 @@ cur = sdb.cursor()
 
 ## sql helpers
 
-def csv(args):
+def csv(args:[str])->str:
     """create a string of comma-separated values"""
     return ','.join(args)
 
-def sepkv(kv):
+def sepkv(d:dict)->([str],[object]):
     """keys and values for a dict, in matching order"""
-    keys = kv.keys()
-    return keys, [kv[k] for k in keys]
+    keys = d.keys()
+    return keys, [d[k] for k in keys]
 
-def ins(tbl, **kv):
+def ins(tbl:str, **kv):
     """sql insert into"""
-    keys = kv.keys()
+    keys, vals = sepkv(kv)
     sql = ('insert into {0} ({1}) values ({2})'
            .format(tbl, csv(keys), csv('?' for e in keys)))
-    cur.execute(sql, [kv[k] for k in keys])
+    cur.execute(sql, vals)
     return cur.lastrowid
 
-def sel(tbl, key, **kv)->any:
+def sel(tbl:str, key:str, **kv)->any:
     """sql select a key from a table"""
-    keys = kv.keys(); vals = [kv[k] for k in keys]
+    keys, vals = sepkv(kv)
     sql = 'select {0} from {1} where {2}'.format(
         key, tbl, ' and '.join('{0}=?'.format(k) for k in keys))
     cur.execute(sql, vals)
     row = cur.fetchone()
     return row[0] if row else None
-
 
 ## assertion helpers
 
