@@ -22,7 +22,7 @@
   Ivan Tikhonov, kefeer@brokestream.com
 
 """
-
+from sys import stdin
 
 #############################
 ### types
@@ -79,7 +79,6 @@ input_buf = ""
 
 def finput(st,ec,ep):
     global input_buf
-    from sys import stdin
     from os import O_NONBLOCK
     from fcntl import fcntl, F_SETFL
 
@@ -94,9 +93,18 @@ def finput(st,ec,ep):
             ep.append(ec.copy())
             ec[:] = re(c)
         input_buf = l
-    except IOError,e:
+    except IOError as e:
         if e.errno != 11:
             raise
+
+# the code above allows the you to type in the prompt while
+# the machine runs, but it doesn't work on freebsd and I don't
+# need it for what I'm doing. -- mjw
+def finput(st,ec,ep):
+    ep.append(ec.copy())
+    ec[:] = re(stdin.readline()[:-1])
+
+
 
 def fdef(st,ec,ep):
     ':'
@@ -122,18 +130,18 @@ def fq(st,ec,ep):
 
 def fdot(st,ec,ep):
     '.'
-    print st
+    print(st)
 
 def fw(*args):
     for (x,y) in zip(atoms,code):
         if isinstance(y,E):
-            print '%10s : %s' % (x,' '.join([atoms[z] for z in y]))
+            print('%10s : %s' % (x,' '.join([atoms[z] for z in y])))
         elif isinstance(y,M):
-            print '%10s : method %s %d' % (x,y.n,y.a)
+            print('%10s : method %s %d' % (x,y.n,y.a))
         elif isinstance(y,X):
-            print '%10s : from %s %s %d' % (x,y.p,y.n,y.a)
+            print('%10s : from %s %s %d' % (x,y.p,y.n,y.a))
         elif y == U: pass
-        else: print '%10s : %s' % (x,y)
+        else: print('%10s : %s' % (x,y))
 
 def fpy(st,ec,ep):
     i = ec.pop(0)
@@ -153,7 +161,7 @@ def fmethod(st, ec, ep):
 def fload(*args):
     st = []
     try: f = open('fo.source')
-    except IOError,e:
+    except IOError as e:
         if e.errno == 2: return
         raise
 
@@ -187,7 +195,7 @@ def fsave(*args):
                 if c != eval(r): continue
                 s = 'py %s %s' % (n,r)
             except:
-                print 'can not store %s (%s)' % (n,repr(c))
+                print('can not store %s (%s)' % (n,repr(c)))
         f.write(s+"\n")
     f.close
     from os import rename
@@ -202,10 +210,10 @@ def fstack(st,ec,ep):
     st.append(st)
 
 def fhello(*args):
-    print "fo.py version unknown"
-    print " (c) Ivan Tikhonov (kefeer@brokestream.com)"
-    print " http://www.brokestream.com/wordpress/category/projects/fopy/"
-    print " type w<enter> to see words defined, type exit<enter> to exit."
+    print("fo.py version unknown")
+    print(" (c) Ivan Tikhonov (kefeer@brokestream.com)")
+    print(" http://www.brokestream.com/wordpress/category/projects/fopy/")
+    print(" type w<enter> to see words defined, type exit<enter> to exit.")
 
 #############################
 
@@ -247,7 +255,7 @@ def ex(e,st):
             if len(ec) > 0: ep.append(ec)
             ec = c.copy()
         elif c == U:
-            print 'undefined:', atoms[x]
+            print('undefined:', atoms[x])
         else: st.append(c)
         if len(ec) == 0:
             try: ec = ep.pop()
